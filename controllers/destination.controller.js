@@ -79,7 +79,7 @@ export const getDestination = async (req, res) => {
       });
     } else {
       res.status(404).json({
-        message: "Destination Not Found'"
+        message: 'Destination Not Found'
       });
     }
   } catch (error) {

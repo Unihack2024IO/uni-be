@@ -59,7 +59,7 @@ export const getActivity = async (req, res) => {
       });
     } else {
       res.status(404).json({
-        message: "Activity Not Found'"
+        message: 'Activity Not Found'
       });
     }
   } catch (error) {
