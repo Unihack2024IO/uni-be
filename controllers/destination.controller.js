@@ -18,7 +18,7 @@ export const getDestinations = async (req, res) => {
       destinations.forEach((doc) => {
         const destination = new Destination({
           name: doc.data().name,
-          priceRange: doc.data().price,
+          priceRange: doc.data().priceRange,
           transportation: {
             modes: doc.data().transportation.modes,
             convenience: doc.data().transportation.convenience
