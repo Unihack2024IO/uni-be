@@ -12,6 +12,6 @@ router.post('/create', controller.createActivity);
 
 router.patch('/update/:id', controller.updateActivity);
 
-router.delete('/delete/:id', controller.deleteDestination);
+router.delete('/delete/:id', controller.deleteActivity);
 
 export default router;

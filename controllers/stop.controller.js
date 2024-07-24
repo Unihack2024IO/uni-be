@@ -1,28 +1,18 @@
-import { dbFirebase } from '../config/firebase.js';
-import { collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
 import Stop from '../models/stop.model.js';
+import HTTP_STATUS from '../constants/httpStatus.js';
+import * as service from '../services/stop.service.js';
 
 // [GET] stops
 export const getStops = async (req, res) => {
   try {
-    const stops = await getDocs(collection(dbFirebase, 'stops'));
-    const stopArray = [];
-
-    if (stops.empty) {
-      res.status(400).json({
-        message: 'No Stops Found'
-      });
-    } else {
-      stops.forEach((doc) => {
-        stopArray.push(doc.data());
-      });
-
-      res.status(200).json({
-        stopArray
-      });
-    }
+    const result = await service.getStops();
+    const { code, stopArray, message } = result;
+    return res.status(code).json({
+      stopArray,
+      message
+    });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -32,19 +22,14 @@ export const getStops = async (req, res) => {
 export const getStop = async (req, res) => {
   try {
     const id = req.params.id;
-    const stops = doc(dbFirebase, 'stops', id);
-    const data = await getDoc(stops);
-    if (data.exists()) {
-      res.status(200).json({
-        data: data.data()
-      });
-    } else {
-      res.status(404).json({
-        message: 'Stop Not Found'
-      });
-    }
+    const result = await service.getStop(id);
+    const { code, data, message } = result;
+    return res.status(code).json({
+      data,
+      message
+    });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -54,7 +39,7 @@ export const getStop = async (req, res) => {
 export const createStop = async (req, res) => {
   try {
     const data = req.body;
-    const stop = new Stop({
+    let stop = new Stop({
       name: data.name,
       address: data.address,
       phone: data.phone,
@@ -73,12 +58,14 @@ export const createStop = async (req, res) => {
       },
       openingHours: data.openingHours
     });
-    await addDoc(collection(dbFirebase, 'stops'), stop);
-    res.status(200).json({
-      message: 'Stop created successfully'
+    stop = JSON.parse(JSON.stringify(stop));
+    const result = await service.createStop(stop);
+    const { code, message } = result;
+    return res.status(code).json({
+      message
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -89,28 +76,27 @@ export const updateStop = async (req, res) => {
   try {
     const id = req.params.id;
     const data = req.body;
-    const stop = doc(dbFirebase, 'stops', id);
-    await updateDoc(stop, data);
-    res.status(200).json({
-      message: 'Stop updated successfully'
+    const result = await service.updateStop(id, data);
+    const { code, message } = result;
+    return res.status(code).json({
+      message
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
 };
 
 // [DELETE] stops/delete/:id
-export const deleteDestination = async (req, res) => {
+export const deleteStop = async (req, res) => {
   try {
     const id = req.params.id;
-    await deleteDoc(doc(dbFirebase, 'stops', id));
-    res.status(200).json({
-      message: 'Stop deleted successfully'
-    });
+    const result = await service.deleteStop(id);
+    const { code, message } = result;
+    return res.status(code).json({ message });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
