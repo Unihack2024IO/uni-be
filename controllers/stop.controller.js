@@ -1,13 +1,11 @@
-import firebase from '../utils/firebase.js';
+import { dbFirebase } from '../config/firebase.js';
+import { collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
 import Stop from '../models/stop.model.js';
-import { getFirestore, collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
-
-const db = getFirestore(firebase);
 
 // [GET] stops
 export const getStops = async (req, res) => {
   try {
-    const stops = await getDocs(collection(db, 'stops'));
+    const stops = await getDocs(collection(dbFirebase, 'stops'));
     const stopArray = [];
 
     if (stops.empty) {
@@ -16,26 +14,7 @@ export const getStops = async (req, res) => {
       });
     } else {
       stops.forEach((doc) => {
-        const stop = new Stop({
-          name: doc.data().name,
-          address: doc.data().address,
-          phone: doc.data().phone,
-          email: doc.data().email,
-          website: doc.data().website,
-          type: doc.data().type,
-          description: doc.data().description,
-          rating: doc.data().rating,
-          reviews: doc.data().reviews,
-          priceRange: doc.data().priceRange,
-          services: doc.data().services,
-          images: doc.data().images,
-          location: {
-            latitude: doc.data().location.latitude,
-            longitude: doc.data().location.longitude
-          },
-          openingHours: doc.data().openingHours
-        });
-        stopArray.push(stop);
+        stopArray.push(doc.data());
       });
 
       res.status(200).json({
@@ -53,7 +32,7 @@ export const getStops = async (req, res) => {
 export const getStop = async (req, res) => {
   try {
     const id = req.params.id;
-    const stops = doc(db, 'stops', id);
+    const stops = doc(dbFirebase, 'stops', id);
     const data = await getDoc(stops);
     if (data.exists()) {
       res.status(200).json({
@@ -75,7 +54,26 @@ export const getStop = async (req, res) => {
 export const createStop = async (req, res) => {
   try {
     const data = req.body;
-    await addDoc(collection(db, 'stops'), data);
+    const stop = new Stop({
+      name: data.name,
+      address: data.address,
+      phone: data.phone,
+      email: data.email,
+      website: data.website,
+      type: data.type,
+      description: data.description,
+      rating: data.rating,
+      reviews: data.reviews,
+      priceRange: data.priceRange,
+      services: data.services,
+      images: data.images,
+      location: {
+        latitude: data.location.latitude,
+        longitude: data.location.longitude
+      },
+      openingHours: data.openingHours
+    });
+    await addDoc(collection(dbFirebase, 'stops'), stop);
     res.status(200).json({
       message: 'Stop created successfully'
     });
@@ -91,7 +89,7 @@ export const updateStop = async (req, res) => {
   try {
     const id = req.params.id;
     const data = req.body;
-    const stop = doc(db, 'stops', id);
+    const stop = doc(dbFirebase, 'stops', id);
     await updateDoc(stop, data);
     res.status(200).json({
       message: 'Stop updated successfully'
@@ -107,7 +105,7 @@ export const updateStop = async (req, res) => {
 export const deleteDestination = async (req, res) => {
   try {
     const id = req.params.id;
-    await deleteDoc(doc(db, 'stops', id));
+    await deleteDoc(doc(dbFirebase, 'stops', id));
     res.status(200).json({
       message: 'Stop deleted successfully'
     });

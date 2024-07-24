@@ -1,13 +1,11 @@
-import firebase from '../utils/firebase.js';
+import { dbFirebase } from '../config/firebase.js';
+import { collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
 import Destination from '../models/destination.model.js';
-import { getFirestore, collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
-
-const db = getFirestore(firebase);
 
 // [GET] destinations
 export const getDestinations = async (req, res) => {
   try {
-    const destinations = await getDocs(collection(db, 'destinations'));
+    const destinations = await getDocs(collection(dbFirebase, 'destinations'));
     const destinationArray = [];
 
     if (destinations.empty) {
@@ -16,44 +14,7 @@ export const getDestinations = async (req, res) => {
       });
     } else {
       destinations.forEach((doc) => {
-        const destination = new Destination({
-          name: doc.data().name,
-          priceRange: doc.data().priceRange,
-          transportation: {
-            modes: doc.data().transportation.modes,
-            convenience: doc.data().transportation.convenience
-          },
-          attractions: doc.data().attractions,
-          cuisine: doc.data().cuisine,
-          recreationalActivities: doc.data().recreationalActivities,
-          safetyAndSecurity: {
-            status: doc.data().safetyAndSecurity.status,
-            measures: doc.data().safetyAndSecurity.measures,
-            advice: doc.data().safetyAndSecurity.advice
-          },
-          localCultureAndCustoms: {
-            etiquette: doc.data().localCultureAndCustoms.etiquette,
-            traditionalFestivals: doc.data().localCultureAndCustoms.traditionalFestivals,
-            specialties: doc.data().localCultureAndCustoms.specialties
-          },
-          idealWeather: {
-            averageTemperature: doc.data().idealWeather.averageTemperature,
-            condition: doc.data().idealWeather.condition,
-            humidity: doc.data().idealWeather.humidity,
-            wind: doc.data().idealWeather.wind
-          },
-          location: {
-            latitude: doc.data().location.latitude,
-            longitude: doc.data().location.longitude
-          },
-          accommodations: doc.data().accommodations,
-          popularTimes: doc.data().popularTimes,
-          contactInfo: {
-            touristOffice: doc.data().contactInfo.touristOffice,
-            email: doc.data().contactInfo.email
-          }
-        });
-        destinationArray.push(destination);
+        destinationArray.push(doc.data());
       });
 
       res.status(200).json({
@@ -71,7 +32,7 @@ export const getDestinations = async (req, res) => {
 export const getDestination = async (req, res) => {
   try {
     const id = req.params.id;
-    const destinations = doc(db, 'destinations', id);
+    const destinations = doc(dbFirebase, 'destinations', id);
     const data = await getDoc(destinations);
     if (data.exists()) {
       res.status(200).json({
@@ -93,7 +54,44 @@ export const getDestination = async (req, res) => {
 export const createDestination = async (req, res) => {
   try {
     const data = req.body;
-    await addDoc(collection(db, 'destinations'), data);
+    const destination = new Destination({
+      name: data.name,
+      priceRange: data.priceRange,
+      transportation: {
+        modes: data.transportation.modes,
+        convenience: data.transportation.convenience
+      },
+      attractions: data.attractions,
+      cuisine: data.cuisine,
+      recreationalActivities: data.recreationalActivities,
+      safetyAndSecurity: {
+        status: data.safetyAndSecurity.status,
+        measures: data.safetyAndSecurity.measures,
+        advice: data.safetyAndSecurity.advice
+      },
+      localCultureAndCustoms: {
+        etiquette: data.localCultureAndCustoms.etiquette,
+        traditionalFestivals: data.localCultureAndCustoms.traditionalFestivals,
+        specialties: data.localCultureAndCustoms.specialties
+      },
+      idealWeather: {
+        averageTemperature: data.idealWeather.averageTemperature,
+        condition: data.idealWeather.condition,
+        humidity: data.idealWeather.humidity,
+        wind: data.idealWeather.wind
+      },
+      location: {
+        latitude: data.location.latitude,
+        longitude: data.location.longitude
+      },
+      accommodations: data.accommodations,
+      popularTimes: data.popularTimes,
+      contactInfo: {
+        touristOffice: data.contactInfo.touristOffice,
+        email: data.contactInfo.email
+      }
+    });
+    await addDoc(collection(dbFirebase, 'destinations'), destination);
     res.status(200).json({
       message: 'Destination created successfully'
     });
@@ -109,7 +107,7 @@ export const updateDestination = async (req, res) => {
   try {
     const id = req.params.id;
     const data = req.body;
-    const destination = doc(db, 'destinations', id);
+    const destination = doc(dbFirebase, 'destinations', id);
     await updateDoc(destination, data);
     res.status(200).json({
       message: 'Destination updated successfully'
@@ -125,7 +123,7 @@ export const updateDestination = async (req, res) => {
 export const deleteDestination = async (req, res) => {
   try {
     const id = req.params.id;
-    await deleteDoc(doc(db, 'destinations', id));
+    await deleteDoc(doc(dbFirebase, 'destinations', id));
     res.status(200).json({
       message: 'Destination deleted successfully'
     });

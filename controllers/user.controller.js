@@ -1,13 +1,11 @@
-import firebase from '../utils/firebase.js';
+import { dbFirebase } from '../config/firebase.js';
+import { collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
 import Stop from '../models/stop.model.js';
-import { getFirestore, collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
-
-const db = getFirestore(firebase);
 
 // [GET] users
 export const getUsers = async (req, res) => {
   try {
-    const stops = await getDocs(collection(db, 'stops'));
+    const stops = await getDocs(collection(dbFirebase, 'stops'));
     const stopArray = [];
 
     if (stops.empty) {
@@ -53,7 +51,7 @@ export const getUsers = async (req, res) => {
 export const getUser = async (req, res) => {
   try {
     const id = req.params.id;
-    const stops = doc(db, 'stops', id);
+    const stops = doc(dbFirebase, 'stops', id);
     const data = await getDoc(stops);
     if (data.exists()) {
       res.status(200).json({
@@ -75,7 +73,7 @@ export const getUser = async (req, res) => {
 export const createUser = async (req, res) => {
   try {
     const data = req.body;
-    await addDoc(collection(db, 'users'), data);
+    await addDoc(collection(dbFirebase, 'users'), data);
     res.status(200).json({
       message: 'User created successfully'
     });
@@ -91,7 +89,7 @@ export const updateUser = async (req, res) => {
   try {
     const id = req.params.id;
     const data = req.body;
-    const stop = doc(db, 'stops', id);
+    const stop = doc(dbFirebase, 'stops', id);
     await updateDoc(stop, data);
     res.status(200).json({
       message: 'Stop updated successfully'
@@ -107,7 +105,7 @@ export const updateUser = async (req, res) => {
 export const deleteUser = async (req, res) => {
   try {
     const id = req.params.id;
-    await deleteDoc(doc(db, 'users', id));
+    await deleteDoc(doc(dbFirebase, 'users', id));
     res.status(200).json({
       message: 'User deleted successfully'
     });

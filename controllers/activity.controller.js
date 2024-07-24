@@ -1,13 +1,11 @@
-import firebase from '../utils/firebase.js';
+import { dbFirebase } from '../config/firebase.js';
+import { collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
 import Activity from '../models/activity.model.js';
-import { getFirestore, collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
-
-const db = getFirestore(firebase);
 
 // [GET] activities
 export const getActivities = async (req, res) => {
   try {
-    const activities = await getDocs(collection(db, 'activities'));
+    const activities = await getDocs(collection(dbFirebase, 'activities'));
     const activityArray = [];
 
     if (activities.empty) {
@@ -16,24 +14,7 @@ export const getActivities = async (req, res) => {
       });
     } else {
       activities.forEach((doc) => {
-        const activity = new Activity({
-          destinationId: doc.data().destinationId,
-          name: doc.data().name,
-          timeStart: doc.data().timeStart,
-          timeEnd: doc.data().timeEnd,
-          dayOfWeek: doc.data().dayOfWeek,
-          description: doc.data().description,
-          type: doc.data().type,
-          imageUrl: doc.data().imageUrl,
-          entryFee: doc.data().entryFee,
-          sponsors: doc.data().sponsors,
-          activities: doc.data().activities,
-          contactInfo: {
-            phone: doc.data().contactInfo.phone,
-            email: doc.data().contactInfo.email
-          }
-        });
-        activityArray.push(activity);
+        activityArray.push(data);
       });
 
       res.status(200).json({
@@ -51,7 +32,7 @@ export const getActivities = async (req, res) => {
 export const getActivity = async (req, res) => {
   try {
     const id = req.params.id;
-    const activities = doc(db, 'activities', id);
+    const activities = doc(dbFirebase, 'activities', id);
     const data = await getDoc(activities);
     if (data.exists()) {
       res.status(200).json({
@@ -73,7 +54,24 @@ export const getActivity = async (req, res) => {
 export const createActivity = async (req, res) => {
   try {
     const data = req.body;
-    await addDoc(collection(db, 'activities'), data);
+    const activity = new Activity({
+      destinationId: data.destinationId,
+      name: data.name,
+      timeStart: data.timeStart,
+      timeEnd: data.timeEnd,
+      dayOfWeek: data.dayOfWeek,
+      description: data.description,
+      type: data.type,
+      imageUrl: data.imageUrl,
+      entryFee: data.entryFee,
+      sponsors: data.sponsors,
+      activities: data.activities,
+      contactInfo: {
+        phone: data.contactInfo.phone,
+        email: data.contactInfo.email
+      }
+    });
+    await addDoc(collection(dbFirebase, 'activities'), activity);
     res.status(200).json({
       message: 'Activity created successfully'
     });
@@ -89,7 +87,7 @@ export const updateActivity = async (req, res) => {
   try {
     const id = req.params.id;
     const data = req.body;
-    const activity = doc(db, 'activities', id);
+    const activity = doc(dbFirebase, 'activities', id);
     await updateDoc(activity, data);
     res.status(200).json({
       message: 'Activity updated successfully'
@@ -105,7 +103,7 @@ export const updateActivity = async (req, res) => {
 export const deleteDestination = async (req, res) => {
   try {
     const id = req.params.id;
-    await deleteDoc(doc(db, 'activities', id));
+    await deleteDoc(doc(dbFirebase, 'activities', id));
     res.status(200).json({
       message: 'Activity deleted successfully'
     });
