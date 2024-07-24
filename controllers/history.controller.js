@@ -1,28 +1,18 @@
-import { dbFirebase } from '../config/firebase.js';
-import { collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
 import TravelHistory from '../models/history.model.js';
+import HTTP_STATUS from '../constants/httpStatus.js';
+import * as service from '../services/history.service.js';
 
 // [GET] history
 export const getHistory = async (req, res) => {
   try {
-    const travelHistory = await getDocs(collection(dbFirebase, 'travelHistory'));
-    const travelHistoryArray = [];
-
-    if (travelHistory.empty) {
-      res.status(400).json({
-        message: 'No Travel History Found'
-      });
-    } else {
-      travelHistory.forEach((doc) => {
-        travelHistoryArray.push(doc.data());
-      });
-
-      res.status(200).json({
-        travelHistoryArray
-      });
-    }
+    const result = await service.getHistory();
+    const { code, travelHistoryArray, message } = result;
+    return res.status(code).json({
+      travelHistoryArray,
+      message
+    });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -32,19 +22,14 @@ export const getHistory = async (req, res) => {
 export const getHistoryDetail = async (req, res) => {
   try {
     const id = req.params.id;
-    const history = doc(dbFirebase, 'travelHistory', id);
-    const data = await getDoc(history);
-    if (data.exists()) {
-      res.status(200).json({
-        data: data.data()
-      });
-    } else {
-      res.status(404).json({
-        message: 'Travel History Not Found'
-      });
-    }
+    const result = await service.getHistoryDetail(id);
+    const { code, data, message } = result;
+    return res.status(code).json({
+      data,
+      message
+    });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -54,7 +39,7 @@ export const getHistoryDetail = async (req, res) => {
 export const createHistory = async (req, res) => {
   try {
     const data = req.body;
-    const history = new TravelHistory({
+    let history = new TravelHistory({
       userId: data.userId,
       destination: data.destination,
       rating: data.rating,
@@ -65,12 +50,14 @@ export const createHistory = async (req, res) => {
       },
       travelCompanions: data.travelCompanions
     });
-    await addDoc(collection(dbFirebase, 'travelHistory'), history);
-    res.status(200).json({
-      message: 'Travel History created successfully'
+    history = JSON.parse(JSON.stringify(history));
+    const result = await service.createHistory(history);
+    const { code, message } = result;
+    return res.status(code).json({
+      message
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -81,13 +68,13 @@ export const updateHistory = async (req, res) => {
   try {
     const id = req.params.id;
     const data = req.body;
-    const history = doc(dbFirebase, 'travelHistory', id);
-    await updateDoc(history, data);
-    res.status(200).json({
-      message: 'Travel History updated successfully'
+    const result = await service.updateHistory(id, data);
+    const { code, message } = result;
+    return res.status(code).json({
+      message
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -97,12 +84,11 @@ export const updateHistory = async (req, res) => {
 export const deleteHistory = async (req, res) => {
   try {
     const id = req.params.id;
-    await deleteDoc(doc(dbFirebase, 'travelHistory', id));
-    res.status(200).json({
-      message: 'Travel History deleted successfully'
-    });
+    const result = await service.deleteHistory(id);
+    const { code, message } = result;
+    return res.status(code).json({ message });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }

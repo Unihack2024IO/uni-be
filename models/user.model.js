@@ -3,7 +3,6 @@ class User {
     this.personalInfo = personalInfo;
     this.preferences = preferences;
     this.healthInfo = healthInfo;
-    this.activity = activity;
   }
 }
 

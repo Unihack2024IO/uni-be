@@ -1,28 +1,12 @@
 class Activity {
-  constructor({
-    destinationId,
-    name,
-    timeStart,
-    timeEnd,
-    dayOfWeek,
-    description,
-    type,
-    imageUrl,
-    entryFee,
-    sponsors,
-    activities,
-    contactInfo
-  }) {
+  constructor({ destinationId, name, time, description, type, imageUrl, entryFee, activities, contactInfo }) {
     this.destinationId = destinationId;
     this.name = name;
-    this.timeStart = timeStart;
-    this.timeEnd = timeEnd;
-    this.dayOfWeek = dayOfWeek;
+    this.time = time;
     this.description = description;
     this.type = type;
     this.imageUrl = imageUrl;
     this.entryFee = entryFee;
-    this.sponsors = sponsors;
     this.activities = activities;
     this.contactInfo = contactInfo;
   }

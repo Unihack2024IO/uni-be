@@ -1,28 +1,18 @@
-import { dbFirebase } from '../config/firebase.js';
-import { collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
 import Activity from '../models/activity.model.js';
+import HTTP_STATUS from '../constants/httpStatus.js';
+import * as service from '../services/activity.service.js';
 
 // [GET] activities
 export const getActivities = async (req, res) => {
   try {
-    const activities = await getDocs(collection(dbFirebase, 'activities'));
-    const activityArray = [];
-
-    if (activities.empty) {
-      res.status(400).json({
-        message: 'No Activities Found'
-      });
-    } else {
-      activities.forEach((doc) => {
-        activityArray.push(data);
-      });
-
-      res.status(200).json({
-        activityArray
-      });
-    }
+    const result = await service.getActivities();
+    const { code, activityArray, message } = result;
+    return res.status(code).json({
+      activityArray,
+      message
+    });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -32,19 +22,14 @@ export const getActivities = async (req, res) => {
 export const getActivity = async (req, res) => {
   try {
     const id = req.params.id;
-    const activities = doc(dbFirebase, 'activities', id);
-    const data = await getDoc(activities);
-    if (data.exists()) {
-      res.status(200).json({
-        data: data.data()
-      });
-    } else {
-      res.status(404).json({
-        message: 'Activity Not Found'
-      });
-    }
+    const result = await service.getActivity(id);
+    const { code, data, message } = result;
+    return res.status(code).json({
+      data,
+      message
+    });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -54,29 +39,28 @@ export const getActivity = async (req, res) => {
 export const createActivity = async (req, res) => {
   try {
     const data = req.body;
-    const activity = new Activity({
+    let activity = new Activity({
       destinationId: data.destinationId,
       name: data.name,
-      timeStart: data.timeStart,
-      timeEnd: data.timeEnd,
-      dayOfWeek: data.dayOfWeek,
+      time: data.time,
       description: data.description,
       type: data.type,
       imageUrl: data.imageUrl,
       entryFee: data.entryFee,
-      sponsors: data.sponsors,
       activities: data.activities,
       contactInfo: {
         phone: data.contactInfo.phone,
         email: data.contactInfo.email
       }
     });
-    await addDoc(collection(dbFirebase, 'activities'), activity);
-    res.status(200).json({
-      message: 'Activity created successfully'
+    activity = JSON.parse(JSON.stringify(activity));
+    const result = await service.createActivity(activity);
+    const { code, message } = result;
+    return res.status(code).json({
+      message
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -87,28 +71,27 @@ export const updateActivity = async (req, res) => {
   try {
     const id = req.params.id;
     const data = req.body;
-    const activity = doc(dbFirebase, 'activities', id);
-    await updateDoc(activity, data);
-    res.status(200).json({
-      message: 'Activity updated successfully'
+    const result = await service.updateActivity(id, data);
+    const { code, message } = result;
+    return res.status(code).json({
+      message
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
 };
 
 // [DELETE] activities/delete/:id
-export const deleteDestination = async (req, res) => {
+export const deleteActivity = async (req, res) => {
   try {
     const id = req.params.id;
-    await deleteDoc(doc(dbFirebase, 'activities', id));
-    res.status(200).json({
-      message: 'Activity deleted successfully'
-    });
+    const result = await service.deleteActivity(id);
+    const { code, message } = result;
+    return res.status(code).json({ message });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }

@@ -1,28 +1,18 @@
-import { dbFirebase } from '../config/firebase.js';
-import { collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
 import Review from '../models/review.model.js';
+import HTTP_STATUS from '../constants/httpStatus.js';
+import * as service from '../services/review.service.js';
 
 // [GET] reviews
 export const getReviews = async (req, res) => {
   try {
-    const reviews = await getDocs(collection(dbFirebase, 'reviews'));
-    const reviewArray = [];
-
-    if (reviews.empty) {
-      res.status(400).json({
-        message: 'No Reviews Found'
-      });
-    } else {
-      reviews.forEach((doc) => {
-        reviewArray.push(doc.data());
-      });
-
-      res.status(200).json({
-        reviewArray
-      });
-    }
+    const result = await service.getReviews();
+    const { code, reviewArray, message } = result;
+    return res.status(code).json({
+      reviewArray,
+      message
+    });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -32,19 +22,14 @@ export const getReviews = async (req, res) => {
 export const getReview = async (req, res) => {
   try {
     const id = req.params.id;
-    const reviews = doc(dbFirebase, 'reviews', id);
-    const data = await getDoc(reviews);
-    if (data.exists()) {
-      res.status(200).json({
-        data: data.data()
-      });
-    } else {
-      res.status(404).json({
-        message: 'Review Not Found'
-      });
-    }
+    const result = await service.getReview(id);
+    const { code, data, message } = result;
+    return res.status(code).json({
+      data,
+      message
+    });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -54,7 +39,7 @@ export const getReview = async (req, res) => {
 export const createReview = async (req, res) => {
   try {
     const data = req.body;
-    const review = new Review({
+    let review = new Review({
       name: data.name,
       userId: data.userId,
       comment: data.comment,
@@ -62,12 +47,14 @@ export const createReview = async (req, res) => {
       date: data.date,
       reviewImages: data.reviewImages
     });
-    await addDoc(collection(dbFirebase, 'reviews'), review);
-    res.status(200).json({
-      message: 'Review created successfully'
+    review = JSON.parse(JSON.stringify(review));
+    const result = await service.createReview(review);
+    const { code, message } = result;
+    return res.status(code).json({
+      message
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -78,13 +65,13 @@ export const updateReview = async (req, res) => {
   try {
     const id = req.params.id;
     const data = req.body;
-    const review = doc(dbFirebase, 'reviews', id);
-    await updateDoc(review, data);
-    res.status(200).json({
-      message: 'Review updated successfully'
+    const result = await service.updateReview(id, data);
+    const { code, message } = result;
+    return res.status(code).json({
+      message
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -94,12 +81,11 @@ export const updateReview = async (req, res) => {
 export const deleteReview = async (req, res) => {
   try {
     const id = req.params.id;
-    await deleteDoc(doc(dbFirebase, 'reviews', id));
-    res.status(200).json({
-      message: 'Review deleted successfully'
-    });
+    const result = await service.deleteReview(id);
+    const { code, message } = result;
+    return res.status(code).json({ message });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }

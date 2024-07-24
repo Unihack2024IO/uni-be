@@ -1,47 +1,18 @@
-import { dbFirebase } from '../config/firebase.js';
-import { collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
-import Stop from '../models/stop.model.js';
+import User from '../models/user.model.js';
+import HTTP_STATUS from '../constants/httpStatus.js';
+import * as service from '../services/user.service.js';
 
 // [GET] users
 export const getUsers = async (req, res) => {
   try {
-    const stops = await getDocs(collection(dbFirebase, 'stops'));
-    const stopArray = [];
-
-    if (stops.empty) {
-      res.status(400).json({
-        message: 'No Stops Found'
-      });
-    } else {
-      stops.forEach((doc) => {
-        const stop = new Stop({
-          name: doc.data().name,
-          address: doc.data().address,
-          phone: doc.data().phone,
-          email: doc.data().email,
-          website: doc.data().website,
-          type: doc.data().type,
-          description: doc.data().description,
-          rating: doc.data().rating,
-          reviews: doc.data().reviews,
-          priceRange: doc.data().priceRange,
-          services: doc.data().services,
-          images: doc.data().images,
-          location: {
-            latitude: doc.data().location.latitude,
-            longitude: doc.data().location.longitude
-          },
-          openingHours: doc.data().openingHours
-        });
-        stopArray.push(stop);
-      });
-
-      res.status(200).json({
-        stopArray
-      });
-    }
+    const result = await service.getUsers();
+    const { code, userArray, message } = result;
+    return res.status(code).json({
+      userArray,
+      message
+    });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -51,19 +22,14 @@ export const getUsers = async (req, res) => {
 export const getUser = async (req, res) => {
   try {
     const id = req.params.id;
-    const stops = doc(dbFirebase, 'stops', id);
-    const data = await getDoc(stops);
-    if (data.exists()) {
-      res.status(200).json({
-        data: data.data()
-      });
-    } else {
-      res.status(404).json({
-        message: 'Stop Not Found'
-      });
-    }
+    const result = await service.getUser(id);
+    const { code, data, message } = result;
+    return res.status(code).json({
+      data,
+      message
+    });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -73,12 +39,19 @@ export const getUser = async (req, res) => {
 export const createUser = async (req, res) => {
   try {
     const data = req.body;
-    await addDoc(collection(dbFirebase, 'users'), data);
-    res.status(200).json({
-      message: 'User created successfully'
+    let user = new User({
+      personalInfo: data.personalInfo,
+      healthInfo: data.healthInfo,
+      preferences: data.preferences
+    });
+    user = JSON.parse(JSON.stringify(user));
+    const result = await service.createUser(user);
+    const { code, message } = result;
+    return res.status(code).json({
+      message
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -89,13 +62,13 @@ export const updateUser = async (req, res) => {
   try {
     const id = req.params.id;
     const data = req.body;
-    const stop = doc(dbFirebase, 'stops', id);
-    await updateDoc(stop, data);
-    res.status(200).json({
-      message: 'Stop updated successfully'
+    const result = await service.updateUser(id, data);
+    const { code, message } = result;
+    return res.status(code).json({
+      message
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -105,12 +78,11 @@ export const updateUser = async (req, res) => {
 export const deleteUser = async (req, res) => {
   try {
     const id = req.params.id;
-    await deleteDoc(doc(dbFirebase, 'users', id));
-    res.status(200).json({
-      message: 'User deleted successfully'
-    });
+    const result = await service.deleteUser(id);
+    const { code, message } = result;
+    return res.status(code).json({ message });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }

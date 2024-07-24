@@ -1,28 +1,18 @@
-import { dbFirebase } from '../config/firebase.js';
-import { collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
+import HTTP_STATUS from '../constants/httpStatus.js';
 import Destination from '../models/destination.model.js';
+import * as service from '../services/destination.service.js';
 
 // [GET] destinations
 export const getDestinations = async (req, res) => {
   try {
-    const destinations = await getDocs(collection(dbFirebase, 'destinations'));
-    const destinationArray = [];
-
-    if (destinations.empty) {
-      res.status(400).json({
-        message: 'No Destinations Found'
-      });
-    } else {
-      destinations.forEach((doc) => {
-        destinationArray.push(doc.data());
-      });
-
-      res.status(200).json({
-        destinationArray
-      });
-    }
+    const result = await service.getDestinations();
+    const { code, destinationArray, message } = result;
+    return res.status(code).json({
+      destinationArray,
+      message
+    });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -32,19 +22,14 @@ export const getDestinations = async (req, res) => {
 export const getDestination = async (req, res) => {
   try {
     const id = req.params.id;
-    const destinations = doc(dbFirebase, 'destinations', id);
-    const data = await getDoc(destinations);
-    if (data.exists()) {
-      res.status(200).json({
-        data: data.data()
-      });
-    } else {
-      res.status(404).json({
-        message: 'Destination Not Found'
-      });
-    }
+    const result = await service.getDestination(id);
+    const { code, data, message } = result;
+    return res.status(code).json({
+      data,
+      message
+    });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -54,7 +39,7 @@ export const getDestination = async (req, res) => {
 export const createDestination = async (req, res) => {
   try {
     const data = req.body;
-    const destination = new Destination({
+    let destination = new Destination({
       name: data.name,
       priceRange: data.priceRange,
       transportation: {
@@ -91,12 +76,14 @@ export const createDestination = async (req, res) => {
         email: data.contactInfo.email
       }
     });
-    await addDoc(collection(dbFirebase, 'destinations'), destination);
-    res.status(200).json({
-      message: 'Destination created successfully'
+    destination = JSON.parse(JSON.stringify(destination));
+    const result = await service.createDestination(destination);
+    const { code, message } = result;
+    return res.status(code).json({
+      message
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -107,13 +94,13 @@ export const updateDestination = async (req, res) => {
   try {
     const id = req.params.id;
     const data = req.body;
-    const destination = doc(dbFirebase, 'destinations', id);
-    await updateDoc(destination, data);
-    res.status(200).json({
-      message: 'Destination updated successfully'
+    const result = await service.updateDestination(id, data);
+    const { code, message } = result;
+    return res.status(code).json({
+      message
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }
@@ -123,12 +110,11 @@ export const updateDestination = async (req, res) => {
 export const deleteDestination = async (req, res) => {
   try {
     const id = req.params.id;
-    await deleteDoc(doc(dbFirebase, 'destinations', id));
-    res.status(200).json({
-      message: 'Destination deleted successfully'
-    });
+    const result = await service.deleteDestination(id);
+    const { code, message } = result;
+    return res.status(code).json({ message });
   } catch (error) {
-    res.status(400).json({
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
       message: error.message
     });
   }

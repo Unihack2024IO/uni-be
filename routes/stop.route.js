@@ -12,6 +12,6 @@ router.post('/create', controller.createStop);
 
 router.patch('/update/:id', controller.updateStop);
 
-router.delete('/delete/:id', controller.deleteDestination);
+router.delete('/delete/:id', controller.deleteStop);
 
 export default router;
