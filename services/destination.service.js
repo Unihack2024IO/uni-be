@@ -72,3 +72,7 @@ export const deleteDestination = async (id) => {
     message: DESTINATIONS_MESSAGES.DESTINATION_DELETED_SUCCESSFULLY
   };
 };
+
+
+//ES6.
+//node common js
