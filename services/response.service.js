@@ -38,11 +38,16 @@ export const getInfoDestination = async (id) => {
   const destination = await getDoc(destinations);
   if (destination.exists()) {
     const q = query(collection(dbFirebase, 'activities'), where('destinationId', '==', id));
+
     const activities = await getDocs(q);
+
     const activitiesArray = [];
 
     activities.forEach((doc) => {
-      activitiesArray.push(doc.data());
+      activitiesArray.push({
+        id: doc.id,
+        ...doc.data()
+      });
     });
 
     const destinationData = destination.data();

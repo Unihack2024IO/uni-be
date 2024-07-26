@@ -1,6 +1,4 @@
-require('dotenv').config();
-const axios = require('axios');
-const { response } = require('express');
+import axios from 'axios';
 
 
 const getForecast = async (location) => {
@@ -34,7 +32,7 @@ const getForecast = async (location) => {
         console.log(error);
     }
 }
-const getForecastOnDay = async (location, day) => {
+export const getForecastOnDay = async (location, day) => {
     try {
         const data = await getForecast(location);
         const forecast = data.filter((item) => {
@@ -50,4 +48,3 @@ const getForecastOnDay = async (location, day) => {
 }
 
 
-module.exports = { getForecast, getForecastOnDay};
