@@ -1,5 +1,5 @@
 import { dbFirebase } from '../config/firebase.js';
-import { collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
 import HTTP_STATUS from '../constants/httpStatus.js';
 import { USERS_MESSAGES } from '../constants/messages.js';
 
@@ -35,6 +35,30 @@ export const getUser = async (id) => {
     return {
       code: HTTP_STATUS.OK,
       data: data.data(),
+      message: USERS_MESSAGES.GET_DETAIL_USERS_SUCCESS
+    };
+  } else {
+    return {
+      code: HTTP_STATUS.NOT_FOUND,
+      message: USERS_MESSAGES.NO_USERS_FOUND
+    };
+  }
+};
+
+// [GET]
+export const getUserByEmail = async (email) => {
+  const q = query(collection(dbFirebase, 'users'), where('personalInfo.email', '==', email));
+  const data = await getDocs(q);
+  const emailList = [];
+
+  data.forEach((doc) => {
+    emailList.push(doc.data());
+  });
+
+  if (emailList.length > 0) {
+    return {
+      code: HTTP_STATUS.OK,
+      data: emailList,
       message: USERS_MESSAGES.GET_DETAIL_USERS_SUCCESS
     };
   } else {
