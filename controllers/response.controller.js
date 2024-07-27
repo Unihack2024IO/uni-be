@@ -34,3 +34,19 @@ export const getInfoDestination = async (req, res) => {
     });
   }
 };
+
+// [GET] activities
+export const getInfoActivities = async (req, res) => {
+  try {
+    const result = await service.getInfoActivities();
+    const { code, activityArray, message } = result;
+    return res.status(code).json({
+      activityArray,
+      message
+    });
+  } catch (error) {
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
+      message: error.message
+    });
+  }
+};
