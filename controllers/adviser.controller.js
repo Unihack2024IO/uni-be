@@ -37,3 +37,30 @@ export const getAdvisers = async (req,res) => {
 
     
 }
+
+
+// [GET] tour advisers
+export const getTourAdvisers = async (req,res) => {
+    try {
+        const { arriveTime,endTime,listActivityId,listStopId} = req.query;
+        if (!arriveTime || !endTime || !listActivityId || !listStopId) {
+            return res.status(HTTP_STATUS.BAD_REQUEST).send('Missing required parameters');
+        }
+        const resp = await adviceService.getTourAdvisers(arriveTime,endTime,listActivityId,listStopId);
+
+        let result = resp.substring(7);
+        result = result.slice(0, -3);
+
+
+        res.status(HTTP_STATUS.OK).json({
+            data: JSON.parse(result),
+            message: 'Advisers retrieved successfully'
+        });
+        }
+        catch (error) {
+            res.status(HTTP_STATUS.BAD_REQUEST).json({
+                message: error.message
+            });
+        }
+}
+

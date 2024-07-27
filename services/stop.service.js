@@ -34,7 +34,10 @@ export const getStop = async (id) => {
   if (data.exists()) {
     return {
       code: HTTP_STATUS.OK,
-      data: data.data(),
+      data: {
+        ...data.data(),
+        id: data.id
+      },
       message: STOPS_MESSAGES.GET_DETAIL_STOPS_SUCCESS
     };
   } else {

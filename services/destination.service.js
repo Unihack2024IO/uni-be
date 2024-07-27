@@ -34,7 +34,10 @@ export const getDestination = async (id) => {
   if (data.exists()) {
     return {
       code: HTTP_STATUS.OK,
-      data: data.data(),
+      data: {
+        ...data.data(),
+        id: data.id
+      },
       message: DESTINATIONS_MESSAGES.GET_DETAIL_DESTINATIONS_SUCCESS
     };
   } else {
