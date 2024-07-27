@@ -52,7 +52,8 @@ export const getUserByEmail = async (email) => {
   const emailList = [];
 
   data.forEach((doc) => {
-    emailList.push(doc.data());
+    const obj = { ...doc.data(), id: doc.id };
+    emailList.push(obj);
   });
 
   if (emailList.length > 0) {
