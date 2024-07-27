@@ -5,6 +5,7 @@ import userRoutes from './user.route.js';
 import reviewRoutes from './review.route.js';
 import historyRoutes from './history.route.js';
 import responseRoutes from './response.route.js';
+import adviser from './adviser.route.js';
 
 export default (app) => {
   app.use('/destinations', destinationRoutes);
@@ -20,4 +21,6 @@ export default (app) => {
   app.use('/history', historyRoutes);
 
   app.use('/response', responseRoutes);
+
+  app.use('/adviser', adviser);
 };
