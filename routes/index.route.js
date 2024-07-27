@@ -6,6 +6,8 @@ import reviewRoutes from './review.route.js';
 import historyRoutes from './history.route.js';
 import responseRoutes from './response.route.js';
 import authRoutes from './auth.route.js';
+import adviser from './adviser.route.js';
+
 
 export default (app) => {
   app.use('/destinations', destinationRoutes);
@@ -23,4 +25,6 @@ export default (app) => {
   app.use('/response', responseRoutes);
 
   app.use('/auth', authRoutes);
+  
+  app.use('/adviser', adviser);
 };

@@ -32,7 +32,10 @@ export const getActivity = async (id) => {
   if (data.exists()) {
     return {
       code: HTTP_STATUS.OK,
-      data: data.data(),
+      data: {
+        ...data.data(),
+        id: data.id
+      },
       message: ACTIVITIES_MESSAGES.GET_DETAIL_ACTIVITIES_SUCCESS
     };
   } else {
